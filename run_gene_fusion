@@ -1,0 +1,31 @@
+#!/bin/bash
+#SBATCH --mail-type=END,FAIL # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-user=cinzia.benetti@edu.unito.it # Where to send mail
+#SBATCH -J gene_fusion
+#SBATCH --mem=5G
+#SBATCH --time=48:00:00
+#SBATCH -N 1
+#SBATCH --output=log_files/geen_fusion.log
+#SBATCH -p cpu_medium
+#SBATCH --cpus-per-task 6
+#SBATCH --threads-per-core 1
+
+	rm flag*
+        workdir=$('pwd')
+        sample_list=($(ls fastq | sed 's/_S.*//g' | uniq))
+        path_output="${workdir}/out/gene_fusion"
+
+# create a dir for outputs:
+        mkdir $path_output
+        c=0
+# Run variant calling with gatk:
+        for i in "${sample_list[@]}"; do
+                sbatch --export=ARG1="${i}" --job-name="${i}" --output="log_files/var_calling_${i}.log" code/006_gene_fusion.sh  >  out.txt
+                if [[ c -eq 3 || c -eq 7 || c -eq 11 ]]; then
+                        while [ ! -f "flag_${sample_list[${c}]}" ]; do
+                                sleep 30
+                        done
+                fi
+                c=$((c+1))
+        done
+	rm flag*

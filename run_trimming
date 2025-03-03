@@ -1,0 +1,53 @@
+#!/bin/bash
+#SBATCH --mail-type=END,FAIL # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-user=cinzia.benetti@edu.unito.it # Where to send mail
+#SBATCH -J RNAseq_trim
+#SBATCH --mem=50G
+#SBATCH --time=48:00:00
+#SBATCH -N 1
+#SBATCH --output=log_files/trim.log
+#SBATCH -p cpu_medium
+#SBATCH --cpus-per-task 6
+#SBATCH --threads-per-core 1
+
+module load fastqc/0.11.7
+module load condaenvs/new/multiqc
+# After you have built a genome for STAR, you can proceed to align, in our case  single-end fastq files, to this reference using the following command:
+workdir=$('pwd')
+sample_list=($(ls fastq | sed 's/_S.*//g' | uniq))
+path_output="${workdir}/fastq_trimmed"
+
+# create a dir for outputs:
+ mkdir $path_output
+ c=0
+
+ mkdir fastqc
+##fastqc for untrimmed-reads
+fastqc -t 15 -o fastqc/ fastq/*
+
+# Run the trimming:
+for i in "${sample_list[@]}"; do
+       sbatch --export=ARG1="${i}" --job-name="${i}" --output="log_files/trimming_${i}.log" code/000_trim_qc.sh  >  out.txt
+        if [[ c -eq 8 ]]; then
+                while [ ! -f "flag_${sample_list[${c}]}" ]; do
+                        sleep 30
+                done
+        fi
+	c=$((c+1))
+  done
+
+##fastqc for untrimmed-reads
+c=$((c-1))
+while [ ! -f "flag_${sample_list[${c}]}" ]; do
+	sleep 30
+done
+
+fastqc -t 15 -o fastqc/ fastq_trimmed/*
+
+
+rm flag*
+
+
+cd fastqc
+multiqc ./
+

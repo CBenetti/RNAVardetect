@@ -1,0 +1,40 @@
+#!/bin/bash
+#SBATCH --mail-type=END,FAIL # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-user=cinzia.benetti@edu.unito.it # Where to send mail
+#SBATCH -J RNAseq_STAR
+#SBATCH --mem=5G
+#SBATCH --time=48:00:00
+#SBATCH -N 1
+#SBATCH --output=log_files/STAR.log
+#SBATCH -p cpu_medium
+#SBATCH --cpus-per-task 6
+#SBATCH --threads-per-core 1
+
+rm flag*
+
+# After you have built a genome for STAR, you can proceed to align, in our case  single-end fastq files, to this reference using the following command:
+workdir=$('pwd')
+if [[ -e fastq_trimmed ]]; then
+	sample_list=($(ls fastq_trimmed | sed 's/_S.*//g' | uniq))
+else
+	sample_list=($(ls fastq | sed 's/_S.*//g' | uniq))
+fi
+
+path_output="${workdir}/BAM_OUT"
+path_genome_dir="${workdir}/genome/STAR_index"
+
+# create a dir for outputs:
+ mkdir $path_output
+ c=0
+# Run the alignment with star:
+for i in "${sample_list[@]}"; do
+       sbatch --export=ARG1="${i}",ARG2="${path_genome_dir}" --job-name="${i}" --output="log_files/alignment_${i}.log" code/001_align.sh  >  out.txt
+        if [[ c -eq 3 || c -eq 7 || c -eq 11 ]]; then
+                while [ ! -f "flag_${sample_list[${c}]}" ]; do
+                        sleep 30
+                done
+        fi
+	c=$((c+1))
+  done
+
+

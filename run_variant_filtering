@@ -1,0 +1,30 @@
+#!/bin/bash
+#SBATCH --mail-type=END,FAIL # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-user=cinzia.benetti@edu.unito.it # Where to send mail
+#SBATCH -J VAR_calling
+#SBATCH --mem=5G
+#SBATCH --time=2:00:00
+#SBATCH -N 1
+#SBATCH --output=log_files/VAR_callCinzia.log
+#SBATCH -p cpu_short
+#SBATCH --cpus-per-task 6
+#SBATCH --threads-per-core 1
+
+	rm flag*
+        workdir=$('pwd')
+        sample_list=($(ls fastq | sed 's/_S.*//g' | uniq))
+
+# create a dir for outputs:
+        c=0
+# Run variant calling with gatk:
+        for i in "${sample_list[@]}"; do
+                sbatch --export=ARG1="${i}" --job-name="${i}"  --output="log_files/var_filter_${i}.log" code/005_variant_annotation.sh  >  out.txt
+                if [[ c -eq 3 || c -eq 7 || c -eq 11 ]]; then
+                        while [ ! -f "flag_${sample_list[${c}]}" ]; do
+                                sleep 30
+                        done
+                fi
+                c=$((c+1))
+        done
+
+

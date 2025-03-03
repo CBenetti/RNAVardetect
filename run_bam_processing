@@ -1,0 +1,29 @@
+#!/bin/bash
+#SBATCH --mail-type=END,FAIL # Mail events (NONE, BEGIN, END, FAIL, ALL)
+#SBATCH --mail-user=cinzia.benetti@edu.unito.it # Where to send mail
+#SBATCH -J BAM_Processing
+#SBATCH --mem=5G
+#SBATCH --time=48:00:00
+#SBATCH -N 1
+#SBATCH --output=log_files/BAM_processing.log
+#SBATCH -p cpu_medium
+#SBATCH --cpus-per-task 6
+#SBATCH --threads-per-core 1
+
+	rm flag*
+
+	workdir=$('pwd')
+	sample_list=($(ls fastq | sed 's/_S.*//g' | uniq))
+	path_genome_dir="${workdir}/genome/STAR_index"
+
+	c=0
+# Run the processing step with Picard:
+	for i in "${sample_list[@]}"; do
+		sbatch --export=ARG1="${i}",ARG2="${path_genome_dir}" --output="log_files/BAM_processing_${i}.log" --job-name="${i}" code/002_sort.sh  >  out.txt
+		if [[ c -eq 3 || c -eq 7 || c -eq 11 ]]; then
+		        while [ ! -f "flag_${sample_list[${c}]}" ]; do
+				sleep 30
+			done
+		fi
+		c=$((c+1))
+	done
