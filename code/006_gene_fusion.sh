@@ -9,9 +9,9 @@
 #SBATCH --threads-per-core 1
 ##Load modules
 module load star-fusion/1.9.0
-    STAR-Fusion --genome_lib_dir ./genome \
+    STAR-Fusion --genome_lib_dir ./genome/GRCh38_gencode_v37_CTAT_lib_Mar012021.plug-n-play/ctat_genome_lib_build_dir \
                 --chimeric_junction BAM_OUT/${ARG1}/${ARG1}_Chimeric.out.junction \
-                --output_dir /out/gene_fusion/${ARG1}_STARFUSION
+                --output_dir ./out/gene_fusion/${ARG1}_STARFUSION
 touch flag_${ARG1}
 
 
