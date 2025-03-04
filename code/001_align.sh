@@ -37,7 +37,7 @@ cd "BAM_OUT/${ARG1}"
   --chimSegmentMin 12 \
   --chimJunctionOverhangMin 12 \
   --chimOutType Junctions SeparateSAMold \
-  --outWigNorm RPM
-
+  --outWigNorm RPM \
+  --chimOutJunctionFormat 1
 
 touch "../../flag_${ARG1}"
