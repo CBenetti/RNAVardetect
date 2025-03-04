@@ -9,8 +9,8 @@
 #SBATCH --threads-per-core 1
 ##Load modules
 module load star-fusion/1.9.0
-    STAR-Fusion --genome_lib_dir /genome \
-                --chimeric_junction BAM_OUT/${ARG1}_Chimeric.out.junction \
+    STAR-Fusion --genome_lib_dir ./genome \
+                --chimeric_junction BAM_OUT/${ARG1}/${ARG1}_Chimeric.out.junction \
                 --output_dir /out/gene_fusion/${ARG1}_STARFUSION
 touch flag_${ARG1}
 

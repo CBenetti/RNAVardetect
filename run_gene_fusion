@@ -18,9 +18,9 @@
 # create a dir for outputs:
         mkdir $path_output
         c=0
-# Run variant calling with gatk:
+# Run gene fusion:
         for i in "${sample_list[@]}"; do
-                sbatch --export=ARG1="${i}" --job-name="${i}" --output="log_files/var_calling_${i}.log" code/006_gene_fusion.sh  >  out.txt
+                sbatch --export=ARG1="${i}" --job-name="${i}" --output="log_files/gene_fusion_${i}.log" code/006_gene_fusion.sh  >  out.txt
                 if [[ c -eq 3 || c -eq 7 || c -eq 11 ]]; then
                         while [ ! -f "flag_${sample_list[${c}]}" ]; do
                                 sleep 30
