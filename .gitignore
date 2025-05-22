@@ -1,0 +1,9 @@
+flag*
+log_files*
+BAM_OUT
+out*
+count_matrix
+fastq
+fastqc
+fastq_trimmed
+sample_sheet*

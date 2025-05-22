@@ -8,14 +8,25 @@
 #SBATCH -c 16
 #SBATCH --threads-per-core 1
 
-fastqs=($(ls fastq/${ARG1}*))
-module load fastp/0.22.0
-    fastp -i ${fastqs[0]} -I ${fastqs[1]} \
-          -o fastq_trimmed/${ARG1}_R1.fastq.gz \
-          -O fastq_trimmed/${ARG1}_R2.fastq.gz \
-          --detect_adapter_for_pe \
-          --qualified_quality_phred 20 \
-          --length_required 36 \
-          --html "fastq_trimmed/${ARG1}_fastp.html" \
-          --json "fastq_trimmed/${ARG1}_fastp.json"
+if [ ! -f "fastq_trimmed/${ARG1}_fastp.html" ]; then
+	fastqs=($(ls fastq/${ARG1}*fastq.gz))
+	module load fastp/0.22.0
+	if [ "${#fastqs[@]}" -eq 2 ]; then
+	    fastp -i ${fastqs[0]} -I ${fastqs[1]} \
+	          -o fastq_trimmed/${ARG1}_R1.fastq.gz \
+	          -O fastq_trimmed/${ARG1}_R2.fastq.gz \
+	          --detect_adapter_for_pe \
+	          --qualified_quality_phred 20 \
+	          --length_required 36 \
+	          --html "fastq_trimmed/${ARG1}_fastp.html" \
+	          --json "fastq_trimmed/${ARG1}_fastp.json"
+	else
+	    fastp -i ${fastqs[0]} \
+	          -o fastq_trimmed/${ARG1}_R1.fastq.gz \
+	          --qualified_quality_phred 20 \
+	          --length_required 36 \
+	          --html "fastq_trimmed/${ARG1}_fastp.html" \
+	          --json "fastq_trimmed/${ARG1}_fastp.json"
+	fi
+fi
 touch flag_${ARG1}

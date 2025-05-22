@@ -14,12 +14,7 @@ rm flag*
 
 # After you have built a genome for STAR, you can proceed to align, in our case  single-end fastq files, to this reference using the following command:
 workdir=$('pwd')
-if [[ -e fastq_trimmed ]]; then
-	sample_list=($(ls fastq_trimmed | sed 's/_S.*//g' | uniq))
-else
-	sample_list=($(ls fastq | sed 's/_S.*//g' | uniq))
-fi
-
+sample_list=($(cat sample_sheet.txt))
 path_output="${workdir}/BAM_OUT"
 path_genome_dir="${workdir}/genome/STAR_index"
 

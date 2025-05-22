@@ -5,14 +5,14 @@
 #SBATCH --mem=5G
 #SBATCH --time=48:00:00
 #SBATCH -N 1
-#SBATCH --output=log_files/geen_fusion.log
+#SBATCH --output=log_files/gene_fusion.log
 #SBATCH -p cpu_medium
 #SBATCH --cpus-per-task 6
 #SBATCH --threads-per-core 1
 
 	rm flag*
         workdir=$('pwd')
-        sample_list=($(ls fastq | sed 's/_S.*//g' | uniq))
+        sample_list=($(cat sample_sheet.txt))
         path_output="${workdir}/out/gene_fusion"
 
 # create a dir for outputs:

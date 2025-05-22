@@ -13,7 +13,7 @@
 	rm flag*
 
 	workdir=$('pwd')
-	sample_list=($(ls fastq | sed 's/_S.*//g' | uniq))
+	sample_list=($(cat sample_sheet.txt))
 	path_genome_dir="${workdir}/genome/STAR_index"
 
 	c=0
@@ -27,3 +27,5 @@
 		fi
 		c=$((c+1))
 	done
+
+	rm flag*

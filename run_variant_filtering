@@ -12,7 +12,7 @@
 
 	rm flag*
         workdir=$('pwd')
-        sample_list=($(ls fastq | sed 's/_S.*//g' | uniq))
+        sample_list=($(cat sample_sheet.txt))
 
 # create a dir for outputs:
         c=0

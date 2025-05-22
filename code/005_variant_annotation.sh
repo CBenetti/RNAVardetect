@@ -17,8 +17,9 @@
 ####SNPs
         gatk SelectVariants -R genome/hg38_genome.fasta -V "out/variant_calling/${ARG1}/${ARG1}_raw_variants.vcf" --select-type-to-include SNP -O "out/variant_calling/${ARG1}/${ARG1}_raw_snps.vcf"
 ##Filter variant calls based on INFO and/or FORMAT annotations.
-	gatk VariantFiltration -V "out/variant_calling/${ARG1}/${ARG1}_raw_snps.vcf" -filter "QD < 2.0" --filter-name "QD2" -filter "QUAL < 30.0" --filter-name "QUAL30" -filter "SOR > 3.0" --filter-name "SOR3" -filter "FS > 60.0" --filter-name "FS60" \
-	-filter "MQ < 40.0" --filter-name "MQ40" -O "out/variant_calling/${ARG1}/${ARG1}_filtered_snps.vcf"
+	gatk VariantAnnotator -V "out/variant_calling/${ARG1}/${ARG1}_raw_snps.vcf" -R genome/hg38_genome.fasta --dbsnp data/common_all_20180418.vcf -O "out/variant_calling/${ARG1}/${ARG1}_raw_snps_dbanno.vcf"
+	gatk VariantFiltration -V "out/variant_calling/${ARG1}/${ARG1}_raw_snps_dbanno.vcf" -filter "QUAL < 20.0" --filter-name "QUAL20" -filter "FS > 60.0" --filter-name "FS60" \
+	-filter "MQ < 40.0" --filter-name "MQ40" -filter "DP < 3" --filter-name "DP3" -filter "vc.hasAttribute('DB')" --filter-name "InDBSNP151" -O "out/variant_calling/${ARG1}/${ARG1}_filtered_snps.vcf"
 	#-filter "MQRankSum < -12.5" --filter-name "MQRankSum-12.5" -filter "ReadPosRankSum < -8.0" --filter-name "ReadPosRankSum-8" \
 ##Annotation
 	cd out/variant_calling/${ARG1}
@@ -27,16 +28,19 @@
 	mv snpEff_genes.txt snpEff_genes_snps.txt
 	cd ../../../
 ##QC
+	perl code/snpeffToMaf.pl "out/variant_calling/${ARG1}/${ARG1}_filtered_snps-ann.vcf" 10 0.05
 	bgzip -c "out/variant_calling/${ARG1}/${ARG1}_filtered_snps-ann.vcf" > "out/variant_calling/${ARG1}/${ARG1}_filtered_snps-ann.vcf.gz"
 	tabix -f -p "out/variant_calling/${ARG1}/${ARG1}_filtered_snps-ann.vcf.gz"
 	gatk CollectVariantCallingMetrics -I "out/variant_calling/${ARG1}/${ARG1}_filtered_snps-ann.vcf.gz" -O "out/variant_calling/${ARG1}/${ARG1}_filtered_snps-ann-eval" --DBSNP "variant_data/Homo_sapiens_assembly38.dbsnp138.vcf.gz"
 
 ####INDELS
         gatk SelectVariants -R genome/hg38_genome.fasta -V "out/variant_calling/${ARG1}/${ARG1}_raw_variants.vcf" --select-type-to-include INDEL -O "out/variant_calling/${ARG1}/${ARG1}_raw_indels.vcf"
+	gatk VariantAnnotator -V "out/variant_calling/${ARG1}/${ARG1}_raw_indels.vcf" -R genome/hg38_genome.fasta --dbsnp data/common_all_20180418.vcf -O "out/variant_calling/${ARG1}/${ARG1}_raw_indels_dbanno.vcf"
 ##Filter variant calls based on INFO and/or FORMAT annotations.
-	gatk VariantFiltration -V "out/variant_calling/${ARG1}/${ARG1}_raw_indels.vcf" -filter "QD < 2.0" --filter-name "QD2" -filter "QUAL < 30.0" --filter-name "QUAL30" -filter "FS > 200.0" --filter-name "FS200" -O "out/variant_calling/${ARG1}/${ARG1}_filtered_indels.vcf"
+	gatk VariantFiltration -V "out/variant_calling/${ARG1}/${ARG1}_raw_indels_dbanno.vcf" -filter "QUAL < 20.0" --filter-name "QUAL20" -filter "FS > 200.0" --filter-name "FS200" \
+	-filter "DP < 3" --filter-name "DP3" -filter "vc.hasAttribute('DB')" --filter-name "InDBSNP151" -filter "MQRankSum < -12.5" --filter-name "MQRankSum-12.5" \
+	-filter "ReadPosRankSum < -20.0" --filter-name "ReadPosRankSum-20" -O "out/variant_calling/${ARG1}/${ARG1}_filtered_indels.vcf"
 
-	#-filter "ReadPosRankSum < -20.0" --filter-name "ReadPosRankSum-20" \
 ##Annotation
 	cd out/variant_calling/${ARG1}
 	java -Xmx8g -jar /gpfs/share/apps/snpeff/4.3/snpEff.jar  -c ../../../code/snpEff.config -v GRCh38.86 "${ARG1}_filtered_indels.vcf" > "${ARG1}_filtered_indels-ann.vcf"
@@ -44,6 +48,7 @@
 	mv snpEff_genes.txt snpEff_indels_snps.txt
 	cd ../../../
 ##QC
+	perl code/snpeffToMaf.pl "out/variant_calling/${ARG1}/${ARG1}_filtered_indels-ann.vcf" 10 0.05
 	bgzip -c "out/variant_calling/${ARG1}/${ARG1}_filtered_indels-ann.vcf" > "out/variant_calling/${ARG1}/${ARG1}_filtered_indels-ann.vcf.gz"
 	tabix -f -p "out/variant_calling/${ARG1}/${ARG1}_filtered_indels-ann.vcf.gz"
 	gatk CollectVariantCallingMetrics -I "out/variant_calling/${ARG1}/${ARG1}_filtered_indels-ann.vcf.gz" -O "out/variant_calling/${ARG1}/${ARG1}_filtered_indels-ann-eval" --DBSNP "variant_data/Homo_sapiens_assembly38.known_indels.vcf.gz"

@@ -14,7 +14,7 @@ module load fastqc/0.11.7
 module load condaenvs/new/multiqc
 # After you have built a genome for STAR, you can proceed to align, in our case  single-end fastq files, to this reference using the following command:
 workdir=$('pwd')
-sample_list=($(ls fastq | sed 's/_S.*//g' | uniq))
+sample_list=($(cat sample_sheet.txt))
 path_output="${workdir}/fastq_trimmed"
 
 # create a dir for outputs:
@@ -23,7 +23,7 @@ path_output="${workdir}/fastq_trimmed"
 
  mkdir fastqc
 ##fastqc for untrimmed-reads
-fastqc -t 15 -o fastqc/ fastq/*
+#fastqc -t 15 -o fastqc/ fastq/*
 
 # Run the trimming:
 for i in "${sample_list[@]}"; do
@@ -42,12 +42,12 @@ while [ ! -f "flag_${sample_list[${c}]}" ]; do
 	sleep 30
 done
 
-fastqc -t 15 -o fastqc/ fastq_trimmed/*
+#fastqc -t 15 -o fastqc/ fastq_trimmed/*
 
 
 rm flag*
 
 
 cd fastqc
-multiqc ./
+#multiqc ./
 
